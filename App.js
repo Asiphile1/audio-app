@@ -4,14 +4,12 @@ import AudioRecorder from "./components/AudioRecorder";
 import AudioList from "./components/AudioList";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import SearchBar from "./components/SearchBar";
+import SplashScreen from "./components/SplashScreen";
 
 export default function App() {
   const [audioNotes, setAudioNotes] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
-
-  useEffect(() => {
-    loadAudioNotes();
-  }, []);
+  const [isSplashVisible, setIsSplashVisible] = useState(true);
 
   const loadAudioNotes = async () => {
     const storedNotes = await AsyncStorage.getItem("audioNotes");
@@ -31,7 +29,7 @@ export default function App() {
   };
 
   const addNewNote = (note) => {
-    const updatedNotes = [note, ...audioNotes]; // Add new note at the beginning
+    const updatedNotes = [...audioNotes, note];
     saveAudioNotes(updatedNotes);
   };
 
@@ -39,11 +37,22 @@ export default function App() {
     note.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  const handleSplashFinish = () => {
+    setIsSplashVisible(false);
+    loadAudioNotes();
+  };
+
   return (
     <View style={styles.container}>
-      <SearchBar setSearchTerm={setSearchTerm} />
-      <AudioRecorder addNewNote={addNewNote} />
-      <AudioList audioNotes={filteredNotes} onDelete={handleDelete} />
+      {isSplashVisible ? (
+        <SplashScreen onFinish={handleSplashFinish} />
+      ) : (
+        <>
+          <SearchBar setSearchTerm={setSearchTerm} />
+          <AudioRecorder addNewNote={addNewNote} />
+          <AudioList audioNotes={filteredNotes} onDelete={handleDelete} />
+        </>
+      )}
     </View>
   );
 }
@@ -55,7 +64,6 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
   },
 });
-
 
 
 
