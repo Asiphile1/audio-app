@@ -81,13 +81,18 @@ const styles = StyleSheet.create({
   recorder: {
     padding: 10,
     borderBottomWidth: 1,
-    backgroundColor: "#f9f9f9",
+    backgroundColor: "#eed3c7",
     marginBottom: 10,
   },
   input: {
+    alignSelf: 'center',
     borderBottomWidth: 1,
+    borderRadius: 5,
     marginBottom: 10,
     padding: 5,
+    backgroundColor: '#fff5eb',
+    width: '95%',
+    height: 50,
   },
 });
 

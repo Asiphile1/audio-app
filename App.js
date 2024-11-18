@@ -4,28 +4,43 @@ import AudioRecorder from "./components/AudioRecorder";
 import AudioList from "./components/AudioList";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import SearchBar from "./components/SearchBar";
-import SplashScreen from "./components/SplashScreen";
+import CustomSplashScreen from "./components/SplashScreen"; // Rename the import to avoid conflict
 
 export default function App() {
   const [audioNotes, setAudioNotes] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [isSplashVisible, setIsSplashVisible] = useState(true);
 
+  useEffect(() => {
+    // Load audio notes once splash is hidden
+    if (!isSplashVisible) {
+      loadAudioNotes();
+    }
+  }, [isSplashVisible]);
+
   const loadAudioNotes = async () => {
-    const storedNotes = await AsyncStorage.getItem("audioNotes");
-    if (storedNotes) {
-      setAudioNotes(JSON.parse(storedNotes));
+    try {
+      const storedNotes = await AsyncStorage.getItem("audioNotes");
+      if (storedNotes) {
+        setAudioNotes(JSON.parse(storedNotes));
+      }
+    } catch (error) {
+      console.error("Failed to load audio notes:", error);
     }
   };
 
   const saveAudioNotes = async (notes) => {
-    await AsyncStorage.setItem("audioNotes", JSON.stringify(notes));
-    setAudioNotes(notes);
+    try {
+      await AsyncStorage.setItem("audioNotes", JSON.stringify(notes));
+      setAudioNotes(notes);
+    } catch (error) {
+      console.error("Failed to save audio notes:", error);
+    }
   };
 
   const handleDelete = async (id) => {
     const filteredNotes = audioNotes.filter((note) => note.id !== id);
-    saveAudioNotes(filteredNotes);
+    await saveAudioNotes(filteredNotes);
   };
 
   const addNewNote = (note) => {
@@ -39,21 +54,25 @@ export default function App() {
 
   const handleSplashFinish = () => {
     setIsSplashVisible(false);
-    loadAudioNotes();
   };
 
   return (
+    
+    
     <View style={styles.container}>
       {isSplashVisible ? (
-        <SplashScreen onFinish={handleSplashFinish} />
+        <CustomSplashScreen onFinish={handleSplashFinish} />
       ) : (
         <>
+        
           <SearchBar setSearchTerm={setSearchTerm} />
           <AudioRecorder addNewNote={addNewNote} />
           <AudioList audioNotes={filteredNotes} onDelete={handleDelete} />
         </>
       )}
     </View>
+    
+
   );
 }
 
@@ -61,7 +80,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     paddingTop: 50,
-    backgroundColor: "#fff",
+    backgroundColor: '#eed3c7',
   },
 });
 
