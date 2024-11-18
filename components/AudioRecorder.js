@@ -1,36 +1,64 @@
-
 import React, { useState } from "react";
-import { View, Button, TextInput, Text, StyleSheet } from "react-native";
+import { View, Button, TextInput, StyleSheet } from "react-native";
 import { Audio } from "expo-av";
-import * as FileSystem from "expo-file-system";
 
 export default function AudioRecorder({ addNewNote }) {
   const [recording, setRecording] = useState(null);
   const [recordName, setRecordName] = useState("");
+  const [isRecording, setIsRecording] = useState(false);
 
   const startRecording = async () => {
     try {
       const { granted } = await Audio.requestPermissionsAsync();
-      if (!granted) return;
+      if (!granted) {
+        alert("Permission to access microphone is required");
+        return;
+      }
 
-      const recording = await Audio.Recording.createAsync(
+      // Prepare the audio mode
+      await Audio.setAudioModeAsync({
+        allowsRecordingIOS: true,
+        playsInSilentModeIOS: true,
+      });
+
+      // Create a new recording instance
+      const { recording } = await Audio.Recording.createAsync(
         Audio.RECORDING_OPTIONS_PRESET_HIGH_QUALITY
       );
+
       setRecording(recording);
+      setIsRecording(true);
     } catch (err) {
       console.error("Failed to start recording:", err);
     }
   };
 
   const stopRecording = async () => {
-    setRecording(null);
-    await recording.stopAndUnloadAsync();
+    try {
+      if (!recording) return;
 
-    const uri = recording.getURI();
-    const id = new Date().getTime();
-    const newNote = { id, uri, name: recordName || `Audio ${id}` };
-    addNewNote(newNote);
-    setRecordName("");
+      setIsRecording(false);
+
+      // Stop and unload the recording
+      await recording.stopAndUnloadAsync();
+
+      // Get the URI of the recorded audio
+      const uri = recording.getURI();
+      const id = new Date().getTime();
+      const newNote = {
+        id,
+        uri,
+        name: recordName.trim() || `Audio ${id}`,
+      };
+
+      addNewNote(newNote);
+
+      // Reset the state
+      setRecording(null);
+      setRecordName("");
+    } catch (error) {
+      console.error("Failed to stop recording:", error);
+    }
   };
 
   return (
@@ -42,8 +70,8 @@ export default function AudioRecorder({ addNewNote }) {
         style={styles.input}
       />
       <Button
-        title={recording ? "Stop Recording" : "Start Recording"}
-        onPress={recording ? stopRecording : startRecording}
+        title={isRecording ? "Stop Recording" : "Start Recording"}
+        onPress={isRecording ? stopRecording : startRecording}
       />
     </View>
   );
@@ -53,6 +81,8 @@ const styles = StyleSheet.create({
   recorder: {
     padding: 10,
     borderBottomWidth: 1,
+    backgroundColor: "#f9f9f9",
+    marginBottom: 10,
   },
   input: {
     borderBottomWidth: 1,
@@ -60,13 +90,6 @@ const styles = StyleSheet.create({
     padding: 5,
   },
 });
-
-
-
-
-
-
-
 
 // import React, { useState } from 'react';
 // import { StyleSheet, View, TextInput, FlatList, Text, TouchableOpacity } from 'react-native';
@@ -181,8 +204,3 @@ const styles = StyleSheet.create({
 //     padding: 10,
 //   },
 // });
-
-
-
-
-

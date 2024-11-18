@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { StyleSheet, View, Text, Button, FlatList } from "react-native";
+import { StyleSheet, View } from "react-native";
 import AudioRecorder from "./components/AudioRecorder";
 import AudioList from "./components/AudioList";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -31,7 +31,7 @@ export default function App() {
   };
 
   const addNewNote = (note) => {
-    const updatedNotes = [...audioNotes, note];
+    const updatedNotes = [note, ...audioNotes]; // Add new note at the beginning
     saveAudioNotes(updatedNotes);
   };
 
@@ -55,7 +55,6 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
   },
 });
-
 
 
 
